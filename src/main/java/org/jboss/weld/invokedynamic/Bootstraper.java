@@ -1,35 +1,44 @@
 package org.jboss.weld.invokedynamic;
 
+import org.jboss.weld.Container;
+import org.jboss.weld.bean.proxy.ContextBeanInstance;
+import org.jboss.weld.serialization.spi.BeanIdentifier;
+import org.jboss.weld.serialization.spi.ContextualStore;
 import org.jboss.weld.test.FirstBean;
 
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.InjectionPoint;
+import java.lang.annotation.Annotation;
 import java.lang.invoke.CallSite;
 import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
+import static org.jboss.weld.bootstrap.api.helpers.RegistrySingletonProvider.STATIC_INSTANCE;
+
 /**
  * @author Antoine Sabot-Durand
  */
 public class Bootstraper {
 
-   /* private static MethodHandle resolveCallMh = null;
+    private static MethodHandle resolveCallMh = null;
 
     static {
         {
             MethodHandles.Lookup lu = MethodHandles.lookup();
             try {
-                resolveCallMh = lu.findStatic(Bootstraper.class, "resolveCall",
-                        MethodType.methodType(Object.class, Bean.class,
-                                MethodHandle.class));
+                resolveCallMh = lu.findStatic(Bootstraper.class, "resolveBean",
+                        MethodType.methodType(Object.class, Object.class, String.class));
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
-    }*/
+    }
 
     private static MethodHandle doSomeWorkMh = null;
 
@@ -37,7 +46,7 @@ public class Bootstraper {
         {
             MethodHandles.Lookup lu = MethodHandles.lookup();
             try {
-                doSomeWorkMh = lu.findStatic(Instead.class, "myDoSomeWork",
+                doSomeWorkMh = lu.findStatic(Bootstraper.class, "myDoSomeWork",
                         MethodType.methodType(void.class, FirstBean.class));
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
@@ -49,46 +58,11 @@ public class Bootstraper {
 
 
     public static CallSite bootstrapGetBean(MethodHandles.Lookup lookup, String name, MethodType methodType,
-                                            Object... params) throws NoSuchMethodException, IllegalAccessException,
+                                            String fieldName) throws NoSuchMethodException, IllegalAccessException,
             NoSuchFieldException {
 
-        MethodHandle impl = (MethodHandle) params[0];
-        String fieldName = (String) params[1];
-
-/*
-        BeanManager bm = CDI.current().getBeanManager();
-
-        Class owner=lookup.lookupClass();
-
-        bm.createAnnotatedType(owner);
-
-
-
-        Field injField = owner.getField(fieldName);
-
-
-
-        Bean<?> bean= bm.getBeans(owner).iterator().next();
-
-
-
-
-
-        for (InjectionPoint ip : bean.getInjectionPoints()) {
-            if(ip.getMember().equals(injField))
-                //return new ConstantCallSite(resolveCallMh);
-            System.out.println("here");
-        }*/
-
-
-        // AnnotatedElement annotatedElement = Magic.reflect(impl);
-        // MethodHandle mh = impl;
-/*            for (Advice advice : advices) {
-                mh = advice.chain(annotatedElement, mh);
-            }*/
-
-        return new ConstantCallSite(doSomeWorkMh.asType(methodType));
-        //return new ConstantCallSite(impl);
+        MethodHandle mh = MethodHandles.insertArguments(resolveCallMh, 1, fieldName);
+        return new ConstantCallSite(mh.asType(methodType));
     }
 
 
@@ -99,14 +73,47 @@ public class Bootstraper {
 
         System.out.println("*** InvokeDynamicBootstrap -> Calling method on bean : " + params[1]);
 
-        return new ConstantCallSite(impl);
+        //Stuff about Interceptor or decorator should be done here
+
+        // AnnotatedElement annotatedElement = Magic.reflect(impl);
+        // MethodHandle mh = impl;
+/*            for (Advice advice : advices) {
+                mh = advice.chain(annotatedElement, mh);
+            }*/
+
+        return new ConstantCallSite(doSomeWorkMh);
     }
 
 
-    public static Object resolveCall(Bean<?> bean, MethodHandle toCall) {
+    public static Object resolveBean(Object from, String fieldName) throws Throwable {
 
-        //ContextBeanInstance beanInstance = new ContextBeanInstance()
+        BeanManager bm = CDI.current().getBeanManager();
 
-        return null;
+        Class owner = from.getClass();
+        Bean<?> bean = bm.getBeans(owner).iterator().next();
+        InjectionPoint injectionPoint = null;
+
+        for (InjectionPoint ip : bean.getInjectionPoints()) {
+            if (ip.getMember().getName().equals(fieldName))
+                injectionPoint = ip;
+        }
+
+        if (injectionPoint == null)
+            throw new IllegalArgumentException("unable to find injection point on field " + fieldName + " in bean class " +
+                    owner);
+
+        Bean resBean = bm.getBeans(injectionPoint.getType(), injectionPoint.getQualifiers().toArray(new Annotation[0]))
+                .iterator().next();
+        BeanIdentifier id = Container.instance(STATIC_INSTANCE).services().get(ContextualStore.class).putIfAbsent(resBean);
+
+
+        ContextBeanInstance beanInstance = new ContextBeanInstance(resBean, id, STATIC_INSTANCE);
+
+        return beanInstance.getInstance();
+    }
+
+    public static void myDoSomeWork(FirstBean bean) {
+        System.out.println("Doing something else");
+        bean.doSomeWork();
     }
 }

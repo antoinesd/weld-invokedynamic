@@ -32,7 +32,8 @@ import java.util.Set;
 public class RewriteBytecode {
 
     /**
-     * A handle to the InvokeDynamic bootstrapGetBean method needed to initialize bootstrapGetBean calls it points to {@link org.jboss
+     * A handle to the InvokeDynamic bootstrapGetBean method needed to initialize bootstrapGetBean calls it points to {@link
+     * org.jboss
      * .research.invokedynamic.Container#bootstrapGetBean} method
      */
 
@@ -41,14 +42,14 @@ public class RewriteBytecode {
             Bootstraper.class.getName().replace('.', '/'),
             "bootstrapGetBean",
             MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class,
-                    Object[].class).toMethodDescriptorString());
+                    String.class).toMethodDescriptorString());
 
 
     private static final Handle BOOTSTRAP_CALL_BEAN_METHOD = new Handle(Opcodes.H_INVOKESTATIC,
-                Bootstraper.class.getName().replace('.', '/'),
-                "bootstrapCallBeanMethod",
-                MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class,
-                        Object[].class).toMethodDescriptorString());
+            Bootstraper.class.getName().replace('.', '/'),
+            "bootstrapCallBeanMethod",
+            MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class,
+                    Object[].class).toMethodDescriptorString());
 
 
     /**
@@ -108,6 +109,10 @@ public class RewriteBytecode {
         }
     }
 
+    public static String cleanSignature(String in) {
+        return in.substring(1, in.length() - 1);
+    }
+
     /**
      * This Visitor visits all fields of a class and fills the provided injectedFields structure when it encounter a field
      * with @Inject annotation
@@ -122,11 +127,11 @@ public class RewriteBytecode {
 
         private Map<String, FieldMetaData> injectedFields;
 
-        public InjectedFieldVisitor(FieldVisitor fv, String name, String desc,Map<String, FieldMetaData> injectedFields) {
+        public InjectedFieldVisitor(FieldVisitor fv, String name, String desc, Map<String, FieldMetaData> injectedFields) {
             super(Opcodes.ASM5, fv);
             this.name = name;
             this.desc = desc;
-            this.injectedFields=injectedFields;
+            this.injectedFields = injectedFields;
             annotations = new HashSet<>();
         }
 
@@ -134,8 +139,8 @@ public class RewriteBytecode {
         public AnnotationVisitor visitAnnotation(String annotationDesc, boolean visible) {
 
             if (annotationDesc.equals("Ljavax/inject/Inject;")) {
-                injectedFields.put(cleanSignature(desc), new FieldMetaData(name,annotations));
-        } else
+                injectedFields.put(cleanSignature(desc), new FieldMetaData(name, annotations));
+            } else
                 annotations.add(cleanSignature(annotationDesc));
             return super.visitAnnotation(annotationDesc, visible);
         }
@@ -146,10 +151,6 @@ public class RewriteBytecode {
             super.visitEnd();
         }
 
-        private String cleanSignature(String in)
-        {
-            return in.substring(1,in.length()-1);
-        }
     }
 
     /**
@@ -179,7 +180,7 @@ public class RewriteBytecode {
         public FieldVisitor visitField(final int access, final String name, final String desc,
                                        final String signature, final Object value) {
             FieldVisitor fv = super.visitField(access, name, desc, signature, value);
-            return new InjectedFieldVisitor(fv, name, desc,injectedFields);
+            return new InjectedFieldVisitor(fv, name, desc, injectedFields);
         }
 
         // We visit each method...
@@ -199,9 +200,10 @@ public class RewriteBytecode {
                         String indyDesc = '(' + ((owner.charAt(0) == '[') ? owner : 'L' + owner + ';') + desc
                                 .substring(1);
                         List<Object> params = new ArrayList<Object>(injectedFields.get(owner).getAnnotations());
-                        params.add(0,handle);
-                        params.add(1,injectedFields.get(owner).getName());
-                        visitInvokeDynamicInsn(name, indyDesc, BOOTSTRAP_CALL_BEAN_METHOD, params.toArray()); // Invokedynamic replacement we send a
+                        params.add(0, handle);
+                        params.add(1, injectedFields.get(owner).getName());
+                        visitInvokeDynamicInsn(name, indyDesc, BOOTSTRAP_CALL_BEAN_METHOD,
+                                params.toArray()); // Invokedynamic replacement we send a
                         // pointer to a boostrap method that will be used to initialize the dynamic call the first
                         // time.
                         modified = true;
@@ -211,18 +213,21 @@ public class RewriteBytecode {
                 }
 
                 // We do the same for field instruction
-               /* @Override
+                @Override
                 public void visitFieldInsn(int opcode, String owner, String name, String desc) {
                     int methodHandleTag;
-                    if (injectedFields.containsKey(name) && (methodHandleTag = asMethodHandleTag(opcode)) != 0) {
-                        Handle handle = new Handle(methodHandleTag, owner, name, desc);
+                    if (injectedFields.containsKey(cleanSignature(desc)) && (methodHandleTag = asMethodHandleTag(opcode)) !=
+                            0) {
+                       // Handle handle = new Handle(methodHandleTag, owner, name, desc);
                         String indyDesc = '(' + ((owner.charAt(0) == '[') ? owner : 'L' + owner + ';') + ')' + desc;
-                        visitInvokeDynamicInsn(name, indyDesc, BOOTSTRAP_GET_BEAN, handle);
+                       // List<Object> params = new ArrayList<Object>(injectedFields.get(cleanSignature(desc)).getAnnotations());
+                        //params.add(0, injectedFields.get(cleanSignature(desc)).getName());
+                        visitInvokeDynamicInsn(name, indyDesc, BOOTSTRAP_GET_BEAN, injectedFields.get(cleanSignature(desc)).getName());
                         modified = true;
                         return;
                     }
                     super.visitFieldInsn(opcode, owner, name, desc);
-                }*/
+                }
             };
         }
 
