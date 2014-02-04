@@ -6,7 +6,7 @@ This code is a proof of concept for using InvokeDynamics vs proxy in Weld Framew
 What is showed
 -------------
 
-This project contains tools to rewrite bytecode in class and replace call to injected field (annotated @Inject) by invokedynamic call
+This project contains tools to rewrite bytecode in class and replace call to injected field (annotated @Inject) by InvokeDynamic call
 
 Pre-requisites to run this poc
 -------------
@@ -97,14 +97,12 @@ Going further
 
 There are a lot of point that need to be enhanced in this firs Proof Of Concept. The main I can see are :
 
-Better Resolution
-================
+### Better Resolution
 
 This code is quite rudimentary regarding bean resolution. The method `Bootstraper.resolveBean()` should be enhanced by a Weld specialist
 to use cache and optimize resolution.
 
-Better Injection Instrumentation
-===============
+### Better Injection Instrumentation
 
 Instrumentation code only detect simple InjectionPoint by looking for `@Inject` annotation on field. We should add all other use case :
 
@@ -112,15 +110,13 @@ Instrumentation code only detect simple InjectionPoint by looking for `@Inject` 
 * Injection in producer parameter
 * Instrumentation of `Instance<>` resolution
 
-among others
+among others.
 
-Create a Java Agent
-==========
+### Create a Java Agent
 
 Right now instrumentation is done by a java executable (class `RewriteByteCode` for convenience, we should off course transform it in a Java Agent
 to do instrumentation when class are loaded
 
-Use InvokeDynamic for AOP
-==========
+### Use InvokeDynamic for AOP
 
 One of the hard point : implement Interceptor spec and Decorator with InvokeDynamic. That will probably be the next step in this POC.
