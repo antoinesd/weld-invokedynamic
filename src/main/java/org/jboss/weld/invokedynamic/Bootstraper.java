@@ -4,7 +4,6 @@ import org.jboss.weld.Container;
 import org.jboss.weld.bean.proxy.ContextBeanInstance;
 import org.jboss.weld.serialization.spi.BeanIdentifier;
 import org.jboss.weld.serialization.spi.ContextualStore;
-import org.jboss.weld.test.FirstBean;
 
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -40,7 +39,7 @@ public class Bootstraper {
         }
     }
 
-    private static MethodHandle doSomeWorkMh = null;
+   /* private static MethodHandle doSomeWorkMh = null;
 
     static {
         {
@@ -54,7 +53,7 @@ public class Bootstraper {
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 
 
     public static CallSite bootstrapGetBean(MethodHandles.Lookup lookup, String name, MethodType methodType,
@@ -62,6 +61,8 @@ public class Bootstraper {
             NoSuchFieldException {
 
         MethodHandle mh = MethodHandles.insertArguments(resolveCallMh, 1, fieldName);
+        System.out.println("*** InvokeDynamicBootstrap -> linking bean resolution for field: " + fieldName);
+
         return new ConstantCallSite(mh.asType(methodType));
     }
 
@@ -71,7 +72,7 @@ public class Bootstraper {
 
         MethodHandle impl = (MethodHandle) params[0];
 
-        System.out.println("*** InvokeDynamicBootstrap -> Calling method on bean : " + params[1]);
+        System.out.println("*** InvokeDynamicBootstrap -> linking method "+ impl.toString() +" on bean: " + name);
 
         //Stuff about Interceptor or decorator should be done here
 
@@ -81,13 +82,16 @@ public class Bootstraper {
                 mh = advice.chain(annotatedElement, mh);
             }*/
 
-        return new ConstantCallSite(doSomeWorkMh);
+        //return new ConstantCallSite(doSomeWorkMh);
+        return new ConstantCallSite(impl);
     }
 
 
     public static Object resolveBean(Object from, String fieldName) throws Throwable {
 
         BeanManager bm = CDI.current().getBeanManager();
+
+        System.out.println("$$$ Resolver called via InvokeDynamic -> Resolving injected bean in bean: " +from.toString() +" in field: " + fieldName);
 
         Class owner = from.getClass();
         Bean<?> bean = bm.getBeans(owner).iterator().next();
@@ -112,8 +116,8 @@ public class Bootstraper {
         return beanInstance.getInstance();
     }
 
-    public static void myDoSomeWork(FirstBean bean) {
+   /* public static void myDoSomeWork(FirstBean bean) {
         System.out.println("Doing something else");
         bean.doSomeWork();
-    }
+    }*/
 }

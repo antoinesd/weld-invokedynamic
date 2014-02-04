@@ -110,7 +110,7 @@ public class RewriteBytecode {
     }
 
     public static String cleanSignature(String in) {
-        return in.substring(1, in.length() - 1);
+        return in.length() < 2 ? in : in.substring(1, in.length() - 1);
     }
 
     /**
@@ -218,11 +218,13 @@ public class RewriteBytecode {
                     int methodHandleTag;
                     if (injectedFields.containsKey(cleanSignature(desc)) && (methodHandleTag = asMethodHandleTag(opcode)) !=
                             0) {
-                       // Handle handle = new Handle(methodHandleTag, owner, name, desc);
+                        // Handle handle = new Handle(methodHandleTag, owner, name, desc);
                         String indyDesc = '(' + ((owner.charAt(0) == '[') ? owner : 'L' + owner + ';') + ')' + desc;
-                       // List<Object> params = new ArrayList<Object>(injectedFields.get(cleanSignature(desc)).getAnnotations());
+                        // List<Object> params = new ArrayList<Object>(injectedFields.get(cleanSignature(desc))
+                        // .getAnnotations());
                         //params.add(0, injectedFields.get(cleanSignature(desc)).getName());
-                        visitInvokeDynamicInsn(name, indyDesc, BOOTSTRAP_GET_BEAN, injectedFields.get(cleanSignature(desc)).getName());
+                        visitInvokeDynamicInsn(name, indyDesc, BOOTSTRAP_GET_BEAN, injectedFields.get(cleanSignature(desc))
+                                .getName());
                         modified = true;
                         return;
                     }
