@@ -14,13 +14,6 @@ Pre-requisites to run this poc
 You'll need a JDK 1.7 (tested with update 45). The code is not running under Java 8 right now due to API change in java.lang
 .invoke between java 7 and 8.
 You'll also need maven 3.x
-Finally you'll need latest snapshot version of `arquillian-weld-ee-embedded-1.1` Arquillian container. As this artifact is not
-available in any known repo you'll have to clone it and build it yourself by issuing the following commands :
-
-    git clone git@github.com:arquillian/arquillian-container-weld.git
-    cd arquillian-container-weld
-    mvn clean install
-
 
 Compiling the code
 ----------

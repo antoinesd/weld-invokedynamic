@@ -15,7 +15,7 @@
         <arquillian.version>1.1.1.Final</arquillian.version>
         <junit.version>4.10</junit.version>
         <jboss-javaee-7.0.version>1.0.0.Final</jboss-javaee-7.0.version>
-        <arquillian-weld-ee-embedded.version>1.0.0.CR7</arquillian-weld-ee-embedded.version>
+        <arquillian-weld-ee-embedded.version>1.0.0.CR8</arquillian-weld-ee-embedded.version>
         <shrinkwrap-resolver.version>2.0.0</shrinkwrap-resolver.version>
         <arquillian>weld-ee-embedded-1.1</arquillian>
     </properties>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.jboss.arquillian.container</groupId>
             <artifactId>arquillian-weld-ee-embedded-1.1</artifactId>
-            <version>1.0.0.Final-SNAPSHOT</version>
+            <version>${arquillian-weld-ee-embedded.version}</version>
             <scope>test</scope>
         </dependency>
 
