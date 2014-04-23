@@ -25,10 +25,9 @@ public class FieldMetaData {
         return annotations;
     }
 
-    public Object[] asArray()
-    {
+    public Object[] asArray() {
         List<String> res = new ArrayList<>(annotations);
-        res.add(0,name);
+        res.add(0, name);
         return res.toArray();
     }
 }

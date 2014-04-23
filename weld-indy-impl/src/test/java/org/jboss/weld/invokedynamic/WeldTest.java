@@ -13,8 +13,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
 import java.io.FileNotFoundException;
+import javax.inject.Inject;
 
 /**
  * @author Antoine Sabot-Durand
@@ -22,20 +22,20 @@ import java.io.FileNotFoundException;
 @RunWith(Arquillian.class)
 public class WeldTest {
 
+    @Inject
+    SecondBean secondBean;
+
     @Deployment
     public static Archive<?> createTestArchive() throws FileNotFoundException {
 
-
         WebArchive ret = ShrinkWrap
                 .create(WebArchive.class, "test.war")
-                .addClasses(FirstBean.class, SecondBean.class, Bootstraper.class)
+                .addClasses(FirstBean.class,
+                        SecondBean.class,
+                        Bootstraper.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return ret;
     }
-
-
-    @Inject
-    SecondBean secondBean;
 
     @Test
     public void testFirstBeanCall() {

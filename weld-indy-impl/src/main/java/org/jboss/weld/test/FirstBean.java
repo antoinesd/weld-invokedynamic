@@ -10,7 +10,6 @@ import javax.enterprise.context.ApplicationScoped;
 public class FirstBean {
 
 
-
     @PostConstruct
     public void init() {
         System.out.println("Constructing First Bean");
