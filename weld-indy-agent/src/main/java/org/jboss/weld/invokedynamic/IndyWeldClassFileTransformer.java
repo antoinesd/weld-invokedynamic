@@ -27,7 +27,7 @@ public class IndyWeldClassFileTransformer implements ClassFileTransformer {
 
         final ClassReader classReader = new ClassReader(classfileBuffer);
         final ClassWriter classWriter = new ClassWriter(classReader, 0);
-        CdiClassVisitor visitor = new CdiClassVisitor(classWriter, classReader);
+        CdiClassVisitor visitor = new CdiClassVisitor(classWriter);
         classReader.accept(visitor, 0);
 
         return classWriter.toByteArray();
@@ -84,7 +84,7 @@ public class IndyWeldClassFileTransformer implements ClassFileTransformer {
         // annotaion to change the static call the these class ofr an InvokeDynamic one
         for (final ClassReader classReader : reader2Path.keySet()) {
             final ClassWriter classWriter = new ClassWriter(classReader, 0);
-            CdiClassVisitor visitor = new CdiClassVisitor(classWriter, classReader);
+            CdiClassVisitor visitor = new CdiClassVisitor(classWriter);
             classReader.accept(visitor, 0);
             if (visitor.isModified()) {
                 try {

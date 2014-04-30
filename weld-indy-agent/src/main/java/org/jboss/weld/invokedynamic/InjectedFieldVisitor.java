@@ -41,10 +41,4 @@ class InjectedFieldVisitor extends FieldVisitor {
         return super.visitAnnotation(annotationDesc, visible);
     }
 
-
-    @Override
-    public void visitEnd() {
-        super.visitEnd();
-    }
-
 }

@@ -1,6 +1,5 @@
 package org.jboss.weld.invokedynamic;
 
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -45,21 +44,17 @@ class CdiClassVisitor extends ClassVisitor {
     );
     private final ClassWriter classWriter;
 
-
-    private final ClassReader classReader;
-
     public boolean isModified() {
         return modified;
     }
 
-    boolean modified;
+    boolean modified = false;
 
     Map<String, FieldMetaData> injectedFields;
 
-    public CdiClassVisitor(ClassWriter classWriter, ClassReader classReader) {
+    public CdiClassVisitor(ClassWriter classWriter) {
         super(Opcodes.ASM5, classWriter);
         this.classWriter = classWriter;
-        this.classReader = classReader;
         injectedFields = new HashMap<>();
     }
 
