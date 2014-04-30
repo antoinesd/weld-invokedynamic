@@ -38,21 +38,6 @@ public class Bootstraper {
         }
     }
 
-   /* private static MethodHandle doSomeWorkMh = null;
-
-    static {
-        {
-            MethodHandles.Lookup lu = MethodHandles.lookup();
-            try {
-                doSomeWorkMh = lu.findStatic(Bootstraper.class, "myDoSomeWork",
-                        MethodType.methodType(void.class, FirstBean.class));
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }*/
 
 
     public static CallSite bootstrapGetBean(MethodHandles.Lookup lookup, String name, MethodType methodType,
@@ -75,13 +60,6 @@ public class Bootstraper {
 
         //Stuff about Interceptor or decorator should be done here
 
-        // AnnotatedElement annotatedElement = Magic.reflect(impl);
-        // MethodHandle mh = impl;
-/*            for (Advice advice : advices) {
-                mh = advice.chain(annotatedElement, mh);
-            }*/
-
-        //return new ConstantCallSite(doSomeWorkMh);
         return new ConstantCallSite(impl);
     }
 
@@ -117,8 +95,5 @@ public class Bootstraper {
         return beanInstance.getInstance();
     }
 
-   /* public static void myDoSomeWork(FirstBean bean) {
-        System.out.println("Doing something else");
-        bean.doSomeWork();
-    }*/
+ 
 }

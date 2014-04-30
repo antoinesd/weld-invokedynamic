@@ -18,7 +18,7 @@ public class FirstBean {
     public void doSomeWork() {
         System.out.println("Working in firstBean");
         //Exception below can bun uncommented to compare stack trace with and without invokeDynamic
-        throw new RuntimeException("throwing exception on purpose");
+        throw new OnPurposeException("throwing exception on purpose");
 
     }
 }
